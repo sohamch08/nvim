@@ -179,9 +179,9 @@ return {
                 }
             },
             image = {
-                enabled = function()
-                    return vim.bo.filetype == "markdown"
-                end,
+                enabled = vim.env.TERM == "xterm-kitty"
+                    or vim.env.TERM_PROGRAM == "WezTerm"
+                    or vim.env.TERM_PROGRAM == "ghostty",
                 doc = {
                     float = false, -- show image on cursor hover
                     inline = false, -- show image inline
