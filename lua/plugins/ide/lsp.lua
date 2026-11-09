@@ -164,7 +164,13 @@ return {
 			ts_query_ls = {},
 			vimls = {},
 			vimdoc_ls = {}, -- Vim help; installed separately below
-			taplo = {}, -- TOML
+			taplo = { -- TOML
+				-- Give standalone files a workspace so Taplo does not exclude them.
+				root_dir = function(bufnr, on_dir)
+					local path = vim.api.nvim_buf_get_name(bufnr)
+					on_dir(vim.fs.root(path, { ".taplo.toml", "taplo.toml", ".git" }) or vim.fs.dirname(path))
+				end,
+			},
 			autotools_ls = { filetypes = { "make", "automake" } },
 			cmake = {},
 			texlab = {}, -- LaTeX and BibTeX
