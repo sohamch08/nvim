@@ -33,6 +33,7 @@ return {
       markdown = { "prettier" },
       sh = { "shfmt" },
       bash = { "shfmt" },
+      zsh = { "shfmt" },
     },
     -- Set default options
     default_format_opts = {
@@ -43,7 +44,13 @@ return {
     -- Customize formatters
     formatters = {
       shfmt = {
-        append_args = { "-i", "2" },
+        append_args = function(_, ctx)
+          local args = { "-i", "2" }
+          if vim.bo[ctx.buf].filetype == "zsh" then
+            vim.list_extend(args, { "-ln", "zsh" })
+          end
+          return args
+        end,
       },
     },
   },
