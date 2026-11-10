@@ -7,6 +7,7 @@ Personal Neovim configuration with Lazy, language servers, completion, formattin
 - `init.lua`: bootstraps Lazy, loads plugin groups, and selects Catppuccin.
 - `lua/core/options.lua`: editor options, persistent undo, indentation, clipboard, and filetype-specific spell-checking.
 - `lua/core/keymaps.lua`: general editing and navigation mappings.
+- `lua/core/filetypes.lua`: filetype rules for Git aliases, msmtp, Notmuch, and Mutt configuration files.
 - `lua/plugins/ide/`: Tree-sitter, LSP, completion, formatting, and LSP memory management.
 - `lua/plugins/ui/`: themes, statusline, notifications, command UI, and cursor effects.
 - `lua/plugins/`: remaining editing, search, Git, and file-management plugins.
@@ -37,7 +38,7 @@ This inventory includes configured plugins and their dependencies. Installed doe
 
 | Plugin | Purpose in this configuration |
 | --- | --- |
-| `nvim-treesitter` | Parser-based syntax highlighting and indentation. Includes Lua, Python, C, Markdown, LaTeX, BibTeX, Rasi, Typst, and other configured parsers. |
+| `nvim-treesitter` | Parser-based syntax highlighting and indentation. Includes Lua, Python, JavaScript, TypeScript/TSX, C, Markdown, LaTeX, BibTeX, Rasi, Typst, and other configured parsers. Files without highlight queries keep their normal syntax highlighting. |
 | `nvim-lspconfig` | Language-server configurations for diagnostics, navigation, renaming, and code actions. |
 | `mason.nvim` | Installs external language servers, formatters, and related tools. |
 | `mason-lspconfig.nvim` | Bridges LSP configuration names and Mason package names. |
@@ -54,7 +55,11 @@ This inventory includes configured plugins and their dependencies. Installed doe
 | `friendly-snippets` | Collection of premade snippets loaded into LuaSnip. |
 | `conform.nvim` | Formats on save and on demand, with LSP formatting as a fallback. |
 
-Conform uses Stylua for Lua; isort then Black for Python; prettierd or Prettier for JavaScript; Prettier for JSX, TypeScript/TSX, HTML, CSS, JSON/JSONC, YAML, and Markdown; and shfmt for shell files. Format-on-save has a 2-second timeout. Shell formatting requests two-space indentation.
+Conform uses Stylua for Lua; isort then Black for Python; prettierd or Prettier for JavaScript; Prettier for JSX, TypeScript/TSX, HTML, CSS, JSON/JSONC, YAML, and Markdown; and shfmt for shell files, including Zsh. Format-on-save has a 2-second timeout. Shell formatting requests two-space indentation; Zsh uses shfmt's Zsh dialect.
+
+Python uses Pyright for completion and type diagnostics, with Ruff for linting. Mason installs both. Diagnostics appear at the right end of the line, with underlines and gutter signs. Taplo also supports standalone TOML files outside a project. Unmodified buffers reload when Neovim detects external file changes.
+
+Standalone Python files use their containing directory as the workspace. Taplo uses its own TOML schema catalog because Taplo 0.10 cannot read SchemaStore's current catalog; custom schema directives still work. Taplo may still log its initial default-catalog warning before applying these settings.
 
 ### Editing
 
@@ -81,7 +86,6 @@ Conform uses Stylua for Lua; isort then Black for Python; prettierd or Prettier 
 | --- | --- |
 | `telescope.nvim` | Fuzzy pickers for files, text, help, diagnostics, symbols, and buffers. |
 | `telescope-fzf-native.nvim` | Native fuzzy matching for Telescope; installation is conditional on `make` being available. |
-| `telescope-ui-select.nvim` | Uses a Telescope dropdown for `vim.ui.select`. |
 | `oil.nvim` | Edits directory contents like a text buffer; configured as the default file explorer, with hidden files shown. |
 | `snacks.nvim` | Explorer, pickers, indentation guides, smooth scrolling, input UI, quick file loading, Git helpers, and configured image support. Image display depends on the terminal and external tools. |
 | `gitsigns.nvim` | Displays Git changes beside lines, with customized symbols and colors. No custom hunk keybindings are configured. |
@@ -176,7 +180,7 @@ Inside a Telescope prompt in Insert mode: `<C-k>` selects the previous result, `
 | `<leader>rN` | N | Rename the current file. |
 | `<leader>dB` | N | Delete/close the current buffer, prompting as needed. |
 | `<leader>pf` | N | Find files. |
-| `<leader>pc` | N | Find files under the hard-coded `~/dotfiles/nvim/.config/nvim/lua` directory. |
+| `<leader>pc` | N | Find Lua files under the active Neovim configuration directory. |
 | `<leader>ps` | N | Live grep. |
 | `<leader>pws` | N, V | Search the current word or selected text. |
 | `<leader>pk` | N | Search keybindings in an Ivy layout. |
@@ -286,7 +290,6 @@ These are documented as currently configured; no mappings were changed for this 
 - **`<leader>e` / `<leader>ee` / `<leader>ef`**: Snacks explorer shares a prefix with Mini Files shortcuts.
 - **`<leader>p` / `<leader>pws` in Visual mode**: register-preserving paste shares a prefix with Snacks search.
 - **`gr`**: the custom LSP references mapping can delay longer built-in `gr…` mappings.
-- **`<leader>pc`** uses a fixed dotfiles path, not the active configuration directory discovered automatically.
 
 To see which mapping wins, use `:verbose nmap <leader>sh` (replace the key as needed). For buffer-local LSP mappings, run this from an attached code buffer.
 
