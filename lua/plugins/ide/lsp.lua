@@ -172,6 +172,26 @@ return {
       tmux_ls = {
         cmd = { 'tmux-language-server' },
         filetypes = { 'tmux' },
+        handlers = {
+          ['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
+            if result and result.diagnostics then
+              local buf = vim.uri_to_bufnr(result.uri)
+              result = vim.tbl_extend('force', result, {
+                diagnostics = vim.tbl_filter(function(diagnostic)
+                  if not diagnostic.message:match(" is not of type 'array'$") then
+                    return true
+                  end
+                  local row = diagnostic.range.start.line
+                  local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ''
+                  local option = line:match('^%s*set[%w%-]*%s+.-(terminal%-[%w%-]+)')
+                  -- tmux accepts strings for these array options; the server's schema does not.
+                  return option ~= 'terminal-overrides' and option ~= 'terminal-features'
+                end, result.diagnostics),
+              })
+            end
+            return vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
+          end,
+        },
       },
       zathura_ls = {
         cmd = { 'zathura-language-server' },
