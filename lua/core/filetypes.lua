@@ -7,7 +7,7 @@ vim.filetype.add({
 		["notmuch-config"] = "dosini",
 	},
 	pattern = {
-		[".*muttrc"] = "muttrc",
+		[".*muttrc"] = "neomuttrc",
 		[".*/%.?cmus/rc"] = { "cmus", { priority = 10 } },
 		[".*/%.?cmus/.*%.conf"] = { "cmus", { priority = 10 } },
 		[".*/%.?cmus/.*%.theme"] = { "cmus", { priority = 10 } },
