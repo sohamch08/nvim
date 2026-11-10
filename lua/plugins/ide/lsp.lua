@@ -30,6 +30,9 @@ return {
     {
       'j-hui/fidget.nvim',
       opts = {
+        progress = {
+          ignore = { 'pyright' },
+        },
         notification = {
           window = {
             winblend = 0, -- Background color opacity in the notification window
@@ -42,6 +45,17 @@ return {
     'hrsh7th/cmp-nvim-lsp',
   },
   config = function()
+    vim.diagnostic.config {
+      virtual_text = {
+        virt_text_pos = 'eol_right_align',
+        spacing = 2,
+      },
+      underline = true,
+      signs = true,
+      severity_sort = true,
+      update_in_insert = false,
+    }
+
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
@@ -134,6 +148,14 @@ return {
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+    -- Use the file's directory when a standalone file has no project root.
+    local function root_with_fallback(markers)
+      return function(bufnr, on_dir)
+        local path = vim.api.nvim_buf_get_name(bufnr)
+        on_dir(vim.fs.root(path, markers) or vim.fs.dirname(path))
+      end
+    end
+
     -- Enable the following language servers
     --
     -- Add any additional override configuration in the following tables. Available keys are:
@@ -149,31 +171,39 @@ return {
       ts_query_ls = {},
       vimls = {},
       vimdoc_ls = {}, -- Vim help; installed separately below
-      taplo = {}, -- TOML
+      taplo = { -- TOML, including standalone files outside a project
+        root_dir = root_with_fallback { '.taplo.toml', 'taplo.toml', '.git' },
+        settings = {
+          evenBetterToml = {
+            schema = {
+              -- Taplo 0.10 rejects SchemaStore's newer catalog schema URL.
+              catalogs = { 'https://taplo.tamasfe.dev/schema_index.json' },
+            },
+          },
+        },
+      },
       autotools_ls = { filetypes = { 'make', 'automake' } },
       cmake = {},
       texlab = {}, -- LaTeX and BibTeX
       tinymist = {}, -- Typst
-      harper_ls = { filetypes = { 'gitcommit' } }, -- Commit spelling/grammar
+      harper_ls = { -- Commit spelling/grammar
+        filetypes = { 'gitcommit' },
+        settings = { ['harper-ls'] = vim.empty_dict() },
+      },
       -- LuaDoc is handled by lua_ls within Lua files.
       -- No dedicated configs are listed for diff, regex, gitignore,
       -- git_config, or rasi; these retain Tree-sitter highlighting.
       ts_ls = {},
-      ruff = {},
-      pylsp = {
-        settings = {
-          pylsp = {
-            plugins = {
-              pyflakes = { enabled = false },
-              pycodestyle = { enabled = false },
-              autopep8 = { enabled = false },
-              yapf = { enabled = false },
-              mccabe = { enabled = false },
-              pylsp_mypy = { enabled = false },
-              pylsp_black = { enabled = false },
-              pylsp_isort = { enabled = false },
-            },
-          },
+      ruff = {
+        root_dir = root_with_fallback { 'pyproject.toml', 'ruff.toml', '.ruff.toml', '.git' },
+        capabilities = {
+          general = { positionEncodings = { 'utf-16' } },
+        },
+      },
+      pyright = {
+        root_dir = root_with_fallback {
+          'pyrightconfig.json', 'pyproject.toml', 'setup.py', 'setup.cfg',
+          'requirements.txt', 'Pipfile', '.git',
         },
       },
       html = { filetypes = { 'html', 'twig', 'hbs' } },

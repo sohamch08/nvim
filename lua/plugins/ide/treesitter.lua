@@ -11,6 +11,9 @@ return {
             "c",
             "diff",
             "html",
+            "javascript",
+            "typescript",
+            "tsx",
             "lua",
             "luadoc",
             "markdown",
@@ -41,6 +44,16 @@ return {
                 { clear = true }
             ),
             callback = function(args)
+                -- Starting without highlight queries disables syntax without replacing it.
+                local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype)
+                if not lang then
+                    return
+                end
+                local ok, highlights = pcall(vim.treesitter.query.get, lang, "highlights")
+                if not ok or not highlights then
+                    return
+                end
+
                 -- Keep normal syntax if no parser is installed.
                 if not pcall(vim.treesitter.start, args.buf) then
                     return

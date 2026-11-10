@@ -1,5 +1,5 @@
 setlocal commentstring=#\ %s
-let b:undo_ftplugin = 'setlocal commmentstring<'
+let b:undo_ftplugin = 'setlocal commentstring<'
 
 if !has('unix')
   finish
@@ -18,4 +18,4 @@ endif
 setlocal iskeyword+=-
 setlocal keywordprg=:MsmtpKeywordPrg
 
-let b:undo_ftplugin .= 'iskeyword< keywordprg<'
+let b:undo_ftplugin .= ' | setlocal iskeyword< keywordprg< | silent! delcommand MsmtpKeywordPrg'
