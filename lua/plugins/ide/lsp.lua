@@ -163,6 +163,29 @@ return {
     -- - filetypes (table): Override the default list of associated filetypes for the server
     -- - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
     -- - settings (table): Override the default settings passed when initializing the server.
+    -- These servers are installed with uv rather than Mason.
+    local extra_servers = {
+      mutt_ls = {
+        cmd = { 'mutt-language-server' },
+        filetypes = { 'muttrc', 'neomuttrc' },
+      },
+      tmux_ls = {
+        cmd = { 'tmux-language-server' },
+        filetypes = { 'tmux' },
+      },
+      zathura_ls = {
+        cmd = { 'zathura-language-server' },
+        filetypes = { 'zathurarc' },
+      },
+    }
+
+    for name, cfg in pairs(extra_servers) do
+      cfg.capabilities = capabilities
+      cfg.root_dir = root_with_fallback { '.git' }
+      vim.lsp.config(name, cfg)
+      vim.lsp.enable(name)
+    end
+
     local servers = {
       -- Matches for the languages in plugins/treesitter.lua.
       bashls = {},
