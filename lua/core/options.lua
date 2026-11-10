@@ -77,4 +77,16 @@ vim.opt.iskeyword:append '-' -- Hyphenated words recognized by searches (default
 vim.opt.formatoptions:remove { 'c', 'r', 'o' } -- Don't insert the current comment leader automatically for auto-wrapping comments using 'textwidth', hitting <Enter> in insert mode, or hitting 'o' or 'O' in normal mode. (default: 'croql')
 -- vim.o.isfname = "@-@"
 vim.opt.isfname:append(".")
+-- Reload files changed outside Neovim, preserving unsaved buffer changes.
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "InsertLeave" }, {
+    group = vim.api.nvim_create_augroup("ReloadExternalChanges", { clear = true }),
+    callback = function()
+        vim.schedule(function()
+            if vim.fn.mode() == "n" then
+                vim.cmd("checktime")
+            end
+        end)
+    end,
+})
 -- vim.opt.runtimepath:remove '/usr/share/vim/vimfiles' -- Separate Vim plugins from Neovim in case Vim still in use (default: includes this path if Vim is installed)
