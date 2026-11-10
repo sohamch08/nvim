@@ -1,6 +1,11 @@
 return {
 	"nvim-lualine/lualine.nvim",
 	config = function()
+		local theme = vim.deepcopy(require("lualine.themes.nord"))
+		theme.visual.a.bg = "#EBC29B"
+		theme.command = { a = vim.deepcopy(theme.normal.a) }
+		theme.command.a.bg = "#A3BE8C"
+
 		local mode = {
 			"mode",
 			fmt = function(str)
@@ -42,7 +47,7 @@ return {
 			sources = { "nvim_diagnostic" },
 			sections = { "error", "warn" },
 			symbols = { error = " ", warn = " ", info = " ", hint = " " },
-			colored = false,
+			colored = true,
 			update_in_insert = false,
 			always_visible = false,
 			cond = hide_in_width,
@@ -50,7 +55,7 @@ return {
 
 		local diff = {
 			"diff",
-			colored = false,
+			colored = true,
 			symbols = { added = " ", modified = " ", removed = " " }, -- changes diff symbols
 			cond = hide_in_width,
 		}
@@ -58,12 +63,10 @@ return {
 		require("lualine").setup({
 			options = {
 				icons_enabled = true,
-				theme = "nord", -- Set theme based on environment variable
-				-- Some useful glyphs:
-				-- https://www.nerdfonts.com/cheat-sheet
-				--        
-				section_separators = { left = "", right = "" },
-				component_separators = { left = "", right = "" },
+				theme = theme,
+				-- Standard Powerline glyphs supported by MapleMono Nerd Font.
+				section_separators = { left = "", right = "" },
+				component_separators = { left = "", right = "" },
 				disabled_filetypes = { "alpha", "neo-tree" },
 				always_divide_middle = true,
 			},
@@ -79,21 +82,7 @@ return {
 					{ "filetype" },
 				},
 				lualine_y = { "location" },
-				lualine_z = {
-					{
-						"progress",
-						separator = { left = "", right = "" },
-						padding = { left = 0, right = 1 },
-						fmt = function(value)
-							local hl = require("lualine.highlight")
-							local location = hl.format_highlight("b", true):match("%%#(.-)#")
-							local progress = hl.format_highlight("a", true):match("%%#(.-)#")
-							-- Keep the diagonal, using the progress background across the whole cell.
-							local transition = hl.get_transitional_highlights(location, progress) or ""
-							return transition .. "" .. "%#" .. progress .. "# " .. value
-						end,
-					},
-				},
+				lualine_z = { "progress" },
 			},
 			inactive_sections = {
 				lualine_a = {},

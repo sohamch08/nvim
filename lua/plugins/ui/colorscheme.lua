@@ -304,7 +304,7 @@ return {
 			},
 			color_overrides = {},
 			custom_highlights = {},
-			auto_integrations = true,
+			auto_integrations = false,
 			integrations = {
 				cmp = true,
 				gitsigns = true,
@@ -316,5 +316,22 @@ return {
 				},
 			},
 		},
+		config = function(_, opts)
+			-- Detect Lazy plugins without initializing the unused vim.pack manager.
+			local catppuccin = require("catppuccin")
+			local mappings = require("catppuccin.utils.integration_mappings")
+			local integrations = {}
+			for name in pairs(require("lazy.core.config").plugins) do
+				local integration = mappings[name:match("^mini%.") and "mini.nvim" or name]
+				if integration then
+					local defaults = catppuccin.default_options.integrations[integration]
+					integrations[integration] = type(defaults) == "table"
+						and vim.tbl_deep_extend("force", defaults, { enabled = true })
+						or true
+				end
+			end
+			opts.integrations = vim.tbl_deep_extend("force", integrations, opts.integrations or {})
+			catppuccin.setup(opts)
+		end,
 	},
 }
